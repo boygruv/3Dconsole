@@ -47,14 +47,18 @@ int main()
         {
             short nShade;
 
-            nShade = '#';
+            nShade = ' ';
 
             for (int y = 0; y < nScreenHeight; y++) // При заданном X проходим по всем Y
             {
                 // В этом цикле рисуется вертикальная полоска
+                if (y == 0) {
+                    nShade = '#';
+                    
+                }
                 screen[y * nScreenWidth + x] = nShade;
-                Sleep(500);
             }
+
         }
         // Display Frame
         screen[nScreenWidth * nScreenHeight - 1] = '\0';
