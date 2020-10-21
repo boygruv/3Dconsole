@@ -21,6 +21,7 @@ int nMapWidth = 16;  // Ширина игрового поля
 
 float fFOV = 3.14159 / 3; // Угол обзора (поле видимости)
 float fDepth = 30.0f;     // Максимальная дистанция обзора
+float fSpeed = 5.0f;
 
 int main()
 {
@@ -105,61 +106,7 @@ int main()
             float fEyeX = sinf(fRayAngle); // Unit vector for ray in player space
             float fEyeY = cosf(fRayAngle);
 
-            // Incrementally cast ray from player, along ray angle, testing for
-            // intersection with a block
-            while (!bHitWall && fDistanceToWall < fDepth)
-            {
-                fDistanceToWall += fStepSize;
-                int nTestX = (int)(fPlayerX + fEyeX * fDistanceToWall);
-                int nTestY = (int)(fPlayerY + fEyeY * fDistanceToWall);
 
-                // Test if ray is out of bounds
-                if (nTestX < 0 || nTestX >= nMapWidth || nTestY < 0 || nTestY >= nMapHeight)
-                {
-                    bHitWall = true; // Just set distance to maximum depth
-                    fDistanceToWall = fDepth;
-                }
-                else
-                {
-                    // Ray is inbounds so test to see if the ray cell is a wall block
-                    if (map.c_str()[nTestX * nMapWidth + nTestY] == '#')
-                    {
-                        // Ray has hit wall
-                        bHitWall = true;
-
-                        // To highlight tile boundaries, cast a ray from each corner
-                        // of the tile, to the player. The more coincident this ray
-                        // is to the rendering ray, the closer we are to a tile
-                        // boundary, which we'll shade to add detail to the walls
-                        vector<pair<float, float>> p;
-
-                        // Test each corner of hit tile, storing the distance from
-                        // the player, and the calculated dot product of the two rays
-                        for (int tx = 0; tx < 2; tx++)
-                            for (int ty = 0; ty < 2; ty++)
-                            {
-                                // Angle of corner to eye
-                                float vy = (float)nTestY + ty - fPlayerY;
-                                float vx = (float)nTestX + tx - fPlayerX;
-                                float d = sqrt(vx * vx + vy * vy);
-                                float dot = (fEyeX * vx / d) + (fEyeY * vy / d);
-                                p.push_back(make_pair(d, dot));
-                            }
-
-                        // Sort Pairs from closest to farthest
-                        sort(p.begin(), p.end(), [](const pair<float, float> &left, const pair<float, float> &right) { return left.first < right.first; });
-
-                        // First two/three are closest (we will never see all four)
-                        float fBound = 0.01;
-                        if (acos(p.at(0).second) < fBound)
-                            bBoundary = true;
-                        if (acos(p.at(1).second) < fBound)
-                            bBoundary = true;
-                        if (acos(p.at(2).second) < fBound)
-                            bBoundary = true;
-                    }
-                }
-            }
 
             // Calculate distance to ceiling and floor
             int nCeiling = (float)(nScreenHeight / 2.0) - nScreenHeight / ((float)fDistanceToWall);
@@ -167,43 +114,21 @@ int main()
 
             // Shader walls based on distance
             short nShade = ' ';
-            if (fDistanceToWall <= fDepth / 4.0f)
-                nShade = 0x2588; // Very close
-            else if (fDistanceToWall < fDepth / 3.0f)
-                nShade = 0x2593;
-            else if (fDistanceToWall < fDepth / 2.0f)
-                nShade = 0x2592;
-            else if (fDistanceToWall < fDepth)
-                nShade = 0x2591;
-            else
-                nShade = ' '; // Too far away
 
-            if (bBoundary)
-                nShade = ' '; // Black it out
 
             for (int y = 0; y < nScreenHeight; y++)
             {
-                // Each Row
-                if (y <= nCeiling)
-                    screen[y * nScreenWidth + x] = ' ';
-                else if (y > nCeiling && y <= nFloor)
-                    screen[y * nScreenWidth + x] = nShade;
-                else // Floor
-                {
-                    // Shade floor based on distance
-                    float b = 1.0f - (((float)y - nScreenHeight / 2.0f) / ((float)nScreenHeight / 2.0f));
-                    if (b < 0.25)
-                        nShade = '#';
-                    else if (b < 0.5)
-                        nShade = 'x';
-                    else if (b < 0.75)
-                        nShade = '.';
-                    else if (b < 0.9)
-                        nShade = '-';
-                    else
-                        nShade = ' ';
-                    screen[y * nScreenWidth + x] = nShade;
+                if (x == 0 || x == nScreenWidth - 1) {
+                    nShade = '#';
                 }
+                else if (y == 0 || y == nScreenHeight - 1) {
+                    nShade = '#';
+                }
+                else {
+                    nShade = ' ';
+                }
+                screen[y * nScreenWidth + x] = nShade;
+
             }
         }
 
