@@ -127,6 +127,10 @@ int main()
                 else {
                     nShade = ' ';
                 }
+
+                if (y == 20 && x == 60) {
+                    nShade = 0x2588;
+                }
                 screen[y * nScreenWidth + x] = nShade;
 
             }
