@@ -47,7 +47,7 @@ int main()
         {
             short nShade;
 
-            nShade = 0x2593;
+            nShade = '#';
 
             for (int y = 0; y < nScreenHeight; y++) // При заданном X проходим по всем Y
             {
@@ -56,6 +56,9 @@ int main()
                 Sleep(500);
             }
         }
+        // Display Frame
+        screen[nScreenWidth * nScreenHeight - 1] = '\0';
+        WriteConsoleOutputCharacter(hConsole, screen, nScreenWidth * nScreenHeight, {0, 0}, &dwBytesWritten);
     }
     return 0;
 }
